@@ -1,3 +1,17 @@
 .single-quote {
-  margin: 3%;
+  margin: 4%;
+}
+
+.black-text {
+  color: black;
+}
+
+.red-text {
+  color: red;
+  text-decoration: line-through;
+}
+
+.green-text {
+  color: #32cd32;
+  font-weight: bold;
 }

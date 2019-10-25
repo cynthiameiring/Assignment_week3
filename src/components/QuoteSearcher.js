@@ -5,44 +5,33 @@ import Quote from "./Quote";
 
 export default class QuoteSearcher extends Component {
   state = {
-    quotes: [
-      {
-        _id: "5d91b45d9980192a317c8acc",
-        quoteText:
-          "Notice that the stiffest tree is most easily cracked, while the bamboo or willow survives by bending with the wind.",
-        quoteAuthor: "Bruce Lee"
-      },
-      {
-        _id: "5d91b45d9980192a317c8abe",
-        quoteText:
-          "Give me six hours to chop down a tree and I will spend the first four sharpening the axe.",
-        quoteAuthor: "Abraham Lincoln"
-      },
-      {
-        _id: "5d91b45d9980192a317c8955",
-        quoteText:
-          "Good timber does not grow with ease; the stronger the wind, the stronger the trees.",
-        quoteAuthor: "J. Willard Marriott"
-      }
-    ]
+    quotes: [],
+    fetching: true,
+    error: false,
+    totalLikes: 0,
+    totalDislikes: 0
   };
-  // componentDidMount() {
-  //   fetch("https://dog.ceo/api/breeds/list/all")
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       this.setState({ dogBreeds: Object.keys(data.message) });
-  //       console.log(this.state.dogBreeds);
-  //     })
-  //     .then(() => this.setState({ loading: false }))
-  //     .catch(() => this.setState({ error: true }));
-  // }
+  componentDidMount() {
+    fetch("https://quote-garden.herokuapp.com/quotes/search/tree")
+      .then(res => res.json())
+      .then(data => {
+        // add the style property to the data
+        const quotesWithStyle = data.results.map(quote => {
+          return { ...quote, style: "black-text" };
+        });
+        this.setState({ quotes: quotesWithStyle });
+        //console.log("this is my data:", this.state.quotes);
+      })
+      .then(() => this.setState({ fetching: false }))
+      .catch(() => this.setState({ error: true }));
+  }
 
   render() {
-    // if (this.state.loading) {
-    //   return <div>{"still loading"}</div>;
-    // } else if (this.state.error) {
-    //   return <div>{"error with fetching data"}</div>;
-    // }
+    if (this.state.fetching) {
+      return <div>{"Still loading.."}</div>;
+    } else if (this.state.error) {
+      return <div>{"Error with fetching data"}</div>;
+    }
     return (
       <div className="quote-container">
         <h1>Quotes</h1>
@@ -51,12 +40,37 @@ export default class QuoteSearcher extends Component {
     );
   }
 
+  likeQuote = quoteId => {
+    //console.log("like button works:", quoteId);
+    const updatedStyle = this.state.quotes.map(quote => {
+      if (quote._id === quoteId) {
+        return { ...quote, style: "green-text" };
+      }
+      return quote;
+    });
+    this.setState({ quotes: updatedStyle });
+  };
+
+  dislikeQuote = quoteId => {
+    const updatedStyle = this.state.quotes.map(quote => {
+      if (quote._id === quoteId) {
+        return { ...quote, style: "red-text" };
+      }
+      return quote;
+    });
+    this.setState({ quotes: updatedStyle });
+  };
+
   renderQuote = quote => {
     return (
       <Quote
         text={quote.quoteText}
         author={quote.quoteAuthor}
+        id={quote._id}
         key={quote._id}
+        like={this.likeQuote}
+        dislike={this.dislikeQuote}
+        style={quote.style}
       />
     );
   };
