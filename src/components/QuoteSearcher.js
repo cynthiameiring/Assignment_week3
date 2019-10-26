@@ -6,13 +6,23 @@ import Quote from "./Quote";
 export default class QuoteSearcher extends Component {
   state = {
     quotes: [],
-    fetching: true,
+    fetching: false,
     error: false,
-    totalLikes: 0,
-    totalDislikes: 0
+    searchterm: ""
   };
+
   componentDidMount() {
-    fetch("https://quote-garden.herokuapp.com/quotes/search/tree")
+    //this.search(" ");
+    console.log("testtest");
+  }
+
+  search = placeholder => {
+    this.setState({ fetching: true });
+    fetch(
+      `https://quote-garden.herokuapp.com/quotes/search/${encodeURIComponent(
+        placeholder
+      )}`
+    )
       .then(res => res.json())
       .then(data => {
         // add the style property to the data
@@ -24,21 +34,7 @@ export default class QuoteSearcher extends Component {
       })
       .then(() => this.setState({ fetching: false }))
       .catch(() => this.setState({ error: true }));
-  }
-
-  render() {
-    if (this.state.fetching) {
-      return <div>{"Still loading.."}</div>;
-    } else if (this.state.error) {
-      return <div>{"Error with fetching data"}</div>;
-    }
-    return (
-      <div className="quote-container">
-        <h1>Quotes</h1>
-        {this.state.quotes.map(this.renderQuote)}
-      </div>
-    );
-  }
+  };
 
   likeQuote = quoteId => {
     //console.log("like button works:", quoteId);
@@ -60,6 +56,56 @@ export default class QuoteSearcher extends Component {
     });
     this.setState({ quotes: updatedStyle });
   };
+
+  handleSubmit = event => {
+    event.preventDefault();
+    //const value = event.target.name.value;
+    //this.setState({ searchterm: "dog" });
+    // this.setState({
+    //   searchterm: value
+    // });
+    this.search("tree");
+    // console.log("Submitting form...");
+  };
+
+  handleChange = event => {
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  };
+
+  render() {
+    if (this.state.fetching) {
+      return <div>{"Still loading.."}</div>;
+    } else if (this.state.error) {
+      return <div>{"Error with fetching data"}</div>;
+    }
+    //console.log("data", this.state.quotes);
+    return (
+      <div className="quote-container">
+        <h1>Quotes</h1>
+        <form onSubmit={this.handleSubmit}>
+          <input
+            type="text"
+            name="searchterm"
+            onChange={this.handleChange}
+            value={this.state.name}
+          />
+          <input type="submit" value="Search" />
+        </form>
+        <h2>
+          Liked:{" "}
+          {
+            this.state.quotes.filter(quote => quote.style === "green-text")
+              .length
+          }{" "}
+          / Disliked:{" "}
+          {this.state.quotes.filter(quote => quote.style === "red-text").length}
+        </h2>
+        {this.state.quotes.map(this.renderQuote)}
+      </div>
+    );
+  }
 
   renderQuote = quote => {
     return (
