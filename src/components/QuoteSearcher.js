@@ -8,31 +8,28 @@ export default class QuoteSearcher extends Component {
     quotes: [],
     fetching: false,
     error: false,
-    searchterm: ""
+    searchterm: "",
+    numberOfQoutes: null
   };
 
-  componentDidMount() {
-    //this.search(" ");
-    console.log("testtest");
-  }
-
-  search = placeholder => {
+  search = mysearchterm => {
     this.setState({ fetching: true });
     fetch(
       `https://quote-garden.herokuapp.com/quotes/search/${encodeURIComponent(
-        placeholder
+        mysearchterm
       )}`
     )
       .then(res => res.json())
       .then(data => {
+        this.setState({ numberOfQoutes: data.count });
+        console.log(this.state.numberOfQoutes);
         // add the style property to the data
         const quotesWithStyle = data.results.map(quote => {
           return { ...quote, style: "black-text" };
         });
-        this.setState({ quotes: quotesWithStyle });
+        this.setState({ quotes: quotesWithStyle, fetching: false });
         //console.log("this is my data:", this.state.quotes);
       })
-      .then(() => this.setState({ fetching: false }))
       .catch(() => this.setState({ error: true }));
   };
 
@@ -59,18 +56,12 @@ export default class QuoteSearcher extends Component {
 
   handleSubmit = event => {
     event.preventDefault();
-    //const value = event.target.name.value;
-    //this.setState({ searchterm: "dog" });
-    // this.setState({
-    //   searchterm: value
-    // });
-    this.search("tree");
-    // console.log("Submitting form...");
+    this.search(this.state.searchterm);
   };
 
   handleChange = event => {
     this.setState({
-      [event.target.name]: event.target.value
+      searchterm: event.target.value
     });
   };
 
@@ -80,16 +71,14 @@ export default class QuoteSearcher extends Component {
     } else if (this.state.error) {
       return <div>{"Error with fetching data"}</div>;
     }
-    //console.log("data", this.state.quotes);
     return (
       <div className="quote-container">
         <h1>Quotes</h1>
         <form onSubmit={this.handleSubmit}>
           <input
             type="text"
-            name="searchterm"
             onChange={this.handleChange}
-            value={this.state.name}
+            value={this.state.searchterm}
           />
           <input type="submit" value="Search" />
         </form>
@@ -102,7 +91,11 @@ export default class QuoteSearcher extends Component {
           / Disliked:{" "}
           {this.state.quotes.filter(quote => quote.style === "red-text").length}
         </h2>
-        {this.state.quotes.map(this.renderQuote)}
+        {this.state.numberOfQoutes === 0 ? (
+          <p>There are no quotes, please try another search term</p>
+        ) : (
+          this.state.quotes.map(this.renderQuote)
+        )}
       </div>
     );
   }
